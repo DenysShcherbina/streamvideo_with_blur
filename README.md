@@ -15,6 +15,6 @@ Video Recorder -> Kafka(topic videostream_in) -> Video Stream Job -> Kafka(topic
 - Create kafka topics (make sure set max.message.bytes property with value=1246000 or more):
     - VideoStream-in: kafka-topics --create --topic videostream_in --partitions 3 --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --config max.message.bytes=1246000
     - VideoStream-out: kafka-topics --create --topic videostream_out --partitions 3 --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --config max.message.bytes=1246000
-- Submit Video Stream Job spark-submit --py-files app/utils.py,app/face_detector.py app/video_stream_job.py
+- Submit Video Stream Job spark-submit --py-files app/utils.py, app/face_detector.py, app/video_stream_job.py
 - Run python app/video_reader.py
 - Run python app/video_recorder.py
