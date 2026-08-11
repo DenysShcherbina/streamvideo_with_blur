@@ -1,16 +1,44 @@
-# streamvideo_with_blur
-Anonymize faces in video stream using Kafka, PySpark, CV Model
+# Real-Time Media Stream Processing Pipeline (Kafka ➔ PySpark Streaming ➔ OpenCV)
 
-# How it's works?
-video_recoder.py: record video to Kafka as stream
+## 📌 Overview
+A high-throughput, low-latency stream processing pipeline designed to handle live video data feeds. The system captures frames in real-time, publishes them to a distributed message broker, runs real-time machine learning inference for face detection via optimized Spark vector operations, anonymizes sensitive visual data, and pipes the result back to an output stream.
 
-video_reader.py: read video from Kafka as stream
+## 🛠️ Tech Stack
+* **Streaming & Messaging:** Apache Kafka (Kafka Clusters, Producers, Consumers)
+* **Stream Processing:** PySpark (Structured Streaming)
+* **Computer Vision & ML:** OpenCV, Haar Cascades / DNN face detection models
+* **Performance Optimization:** PyArrow, Spark Pandas UDF (User Defined Functions)
+* **Deployment:** Docker
 
-video_stream_job.py: PySpark stream job to process frames, detect face, blur and then record frame to Kafka.
+## 🚀 Key Implementation Features
+1. **Distributed Frame Ingestion:** OpenCV captures live video frames, serializes them into bytes, and transmits them to an Apache Kafka cluster with optimal partitioning to handle high-frequency write throughput.
+2. **Vectorized ML Inference:** Integrated the computer vision model inside a **Pandas UDF**, enabling PySpark to leverage Apache Arrow for zero-serialization data transfer and execute vectorized ML inference on batch arrays instead of row-by-row processing.
+3. **Real-Time Data Masking:** Faces are detected and dynamically anonymized (Gaussian blur applied) on the fly with sub-second latency, adhering to strict data privacy regulations (GDPR/Compliance).
 
-Video Recorder -> Kafka(topic videostream_in) -> Video Stream Job -> Kafka(topic videostream_out) -> Video Reader
+## ⚙️ How it's works?
+app/video_recoder.py: record video to Kafka as stream
 
-# Reproduce
+app/video_reader.py: read video from Kafka as stream
+
+app/video_stream_job.py: PySpark stream job to process frames, detect face, blur and then record frame to Kafka.
+
+```text
+[ Camera / Video Source ] 
+       │
+       ▼ (OpenCV Frame Capture)
+[ Apache Kafka Producer ] ➔ Topic: `raw-video-frames`
+                                      │
+                                      ▼
+[ PySpark Structured Streaming ] (Consumes stream)
+       │
+       ▼ (ML Inference via Vectorized Pandas UDF)
+[ Face Detection & Blurring Engine ]
+       │
+       ▼
+[ Apache Kafka Consumer ] ➔ Topic: `processed-video-frames`
+```
+
+## ▶ Reproduce
 - Up Kafka Brokers docker-compose up -d
 - Create kafka topics (make sure set max.message.bytes property with value=1246000 or more):
     - VideoStream-in: kafka-topics --create --topic videostream_in --partitions 3 --bootstrap-server localhost:9092,localhost:9093,localhost:9094 --config max.message.bytes=1246000
