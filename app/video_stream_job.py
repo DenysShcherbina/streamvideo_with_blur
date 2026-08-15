@@ -2,11 +2,10 @@ from face_detector import FaceDetector
 import pandas as pd
 from pyspark.sql.pandas.functions import pandas_udf, PandasUDFType
 from pyspark.sql.types import BinaryType
-
 from utils import encode_obj, decode_obj
 from pyspark.sql import SparkSession
 
-BOOTSTRAP_SERVERS = 'localhost:9092,localhost:9093,localhost:9094'
+BOOTSTRAP_SERVERS = 'localhost:9092,localhost:9093'
 VIDEO_IN_TOPIC = 'videostream_in'
 VIDEO_OUT_TOPIC = 'videostream_out'
 
@@ -24,14 +23,19 @@ def main():
         .builder \
         .appName("VideoStream") \
         .config('spark.jars.packages', 'org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.0') \
+        .config('spark.driver.extraJavaOptions', '-Dhttps.protocols=TLSv1.2') \
+        .config('spark.auth.secret.timeout', '300') \
+        .config('spark.network.timeout', '300s') \
+        .config('spark.executor.heartbeatInterval', '60s') \
         .getOrCreate()
 
     frames = spark \
         .readStream \
         .format("kafka") \
-        .option("kafka.bootstrap.servers", "localhost:9092,localhost:9093,localhost:9094") \
+        .option("kafka.bootstrap.servers", BOOTSTRAP_SERVERS) \
         .option("startingOffsets", "latest") \
         .option("subscribe", VIDEO_IN_TOPIC) \
+        .option("maxOffsetsPerTrigger", 50) \
         .load()
 
     df = frames.selectExpr("key", "value")
@@ -42,9 +46,10 @@ def main():
         .format("kafka") \
         .outputMode("append") \
         .option("checkpointLocation", "checkpoint") \
-        .option("kafka.bootstrap.servers", "localhost:9092,localhost:9093,localhost:9094") \
+        .option("kafka.bootstrap.servers", BOOTSTRAP_SERVERS) \
         .option("kafka.max.request.size", "1246000") \
         .option("topic", VIDEO_OUT_TOPIC) \
+        .option("kafka.acks", "-1") \
         .start()
 
     print("Start")
