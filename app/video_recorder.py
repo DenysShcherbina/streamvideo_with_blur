@@ -3,7 +3,7 @@ import uuid
 import cv2
 from kafka import KafkaProducer
 
-BOOTSTRAP_SERVERS = 'localhost:9092,localhost:9093,localhost:9094'
+BOOTSTRAP_SERVERS = 'localhost:9092,localhost:9093'
 VIDEO_TOPIC = 'videostream_in'
 VIDEO_DEVICE = 0  # may specific for env
 CAMERA_ID = str(uuid.uuid4())
