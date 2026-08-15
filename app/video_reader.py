@@ -2,7 +2,7 @@ import cv2
 from kafka import KafkaConsumer
 from utils import decode_obj
 
-BOOTSTRAP_SERVERS = 'localhost:9092,localhost:9093,localhost:9094'
+BOOTSTRAP_SERVERS = 'localhost:9092,localhost:9093'
 VIDEO_TOPIC = 'videostream_out'
 
 consumer = KafkaConsumer(VIDEO_TOPIC,
